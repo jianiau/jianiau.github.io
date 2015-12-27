@@ -4,7 +4,7 @@
   <title><![CDATA[My Octopress Blog]]></title>
   <link href="http://jianiau.github.io/atom.xml" rel="self"/>
   <link href="http://jianiau.github.io/"/>
-  <updated>2015-12-27T16:57:56+08:00</updated>
+  <updated>2015-12-27T23:02:40+08:00</updated>
   <id>http://jianiau.github.io/</id>
   <author>
     <name><![CDATA[Jimmy Huang]]></name>
@@ -18,20 +18,31 @@
     <link href="http://jianiau.github.io/blog/2015/12/27/hello-world/"/>
     <updated>2015-12-27T16:52:15+08:00</updated>
     <id>http://jianiau.github.io/blog/2015/12/27/hello-world</id>
-    <content type="html"><![CDATA[<h1>Title1</h1>
-
-<h2>111</h2>
+    <content type="html"><![CDATA[<h1 id="title1">Title1</h1>
+<p>## 111</p>
 
 <ul>
-<li>AAA</li>
-<li>BBB</li>
-<li>CCC</li>
+  <li>AAA</li>
+  <li>BBB</li>
+  <li>CCC</li>
 </ul>
 
+<h1 id="title2">Title2</h1>
+<p>## 222</p>
 
-<h1>Title2</h1>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>112233 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="tcl"><span class="line"><span class="nb">package</span> require ans
+</span><span class="line"><span class="nv">ans</span><span class="o">::</span>integer as bb
+</span><span class="line"><span class="nb">puts</span> zz<span class="err">=</span><span class="nv">$zz</span>
+</span><span class="line"><span class="k">expr</span> <span class="mi">1</span><span class="o">+</span><span class="mi">1</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<h2>222</h2>
+<script type="math/tex; mode=display">f(x \; | \; \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi} } \; e^{ -\frac{(x-\mu)^2}{2\sigma^2} }</script>
+
 ]]></content>
   </entry>
   

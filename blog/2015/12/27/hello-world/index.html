@@ -9,10 +9,16 @@
   <meta name="author" content="Jimmy Huang">
 
   
-  <meta name="description" content="Title1 111 AAA
-BBB
-CCC Title2 222
-">
+  <meta name="description" content="Title1
+## 111 AAA BBB CCC Title2
+## 222 112233 1
+2
+3
+4
+package require ans
+ans::integer as bb
+puts zz=$zz
+expr 1+1 ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -32,6 +38,36 @@ CCC Title2 222
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript"
+   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
 
   
 
@@ -87,20 +123,31 @@ CCC Title2 222
   </header>
 
 
-<div class="entry-content"><h1>Title1</h1>
-
-<h2>111</h2>
+<div class="entry-content"><h1 id="title1">Title1</h1>
+<p>## 111</p>
 
 <ul>
-<li>AAA</li>
-<li>BBB</li>
-<li>CCC</li>
+  <li>AAA</li>
+  <li>BBB</li>
+  <li>CCC</li>
 </ul>
 
+<h1 id="title2">Title2</h1>
+<p>## 222</p>
 
-<h1>Title2</h1>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>112233 </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="tcl"><span class="line"><span class="nb">package</span> require ans
+</span><span class="line"><span class="nv">ans</span><span class="o">::</span>integer as bb
+</span><span class="line"><span class="nb">puts</span> zz<span class="err">=</span><span class="nv">$zz</span>
+</span><span class="line"><span class="k">expr</span> <span class="mi">1</span><span class="o">+</span><span class="mi">1</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<h2>222</h2>
+<script type="math/tex; mode=display">f(x \; | \; \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi} } \; e^{ -\frac{(x-\mu)^2}{2\sigma^2} }</script>
+
 </div>
 
 
