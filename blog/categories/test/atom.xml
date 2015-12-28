@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Test | My Octopress Blog]]></title>
+  <title><![CDATA[Category: Test | Jimmy's Blog]]></title>
   <link href="http://jianiau.github.io/blog/categories/test/atom.xml" rel="self"/>
   <link href="http://jianiau.github.io/"/>
-  <updated>2015-12-27T23:02:40+08:00</updated>
+  <updated>2015-12-28T09:32:27+08:00</updated>
   <id>http://jianiau.github.io/</id>
   <author>
     <name><![CDATA[Jimmy Huang]]></name>
@@ -19,7 +19,11 @@
     <updated>2015-12-27T16:52:15+08:00</updated>
     <id>http://jianiau.github.io/blog/2015/12/27/hello-world</id>
     <content type="html"><![CDATA[<h1 id="title1">Title1</h1>
-<p>## 111</p>
+<p>1111111111</p>
+
+<h2 id="section">111</h2>
+
+<h3 id="section-1">222</h3>
 
 <ul>
   <li>AAA</li>
@@ -27,8 +31,11 @@
   <li>CCC</li>
 </ul>
 
-<h1 id="title2">Title2</h1>
-<p>## 222</p>
+<!--more-->
+<p># Title2
+22222222222</p>
+
+<h2 id="section-2">222</h2>
 
 <p><figure class='code'><figcaption><span>112233 </span></figcaption>
 <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
