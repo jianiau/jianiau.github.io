@@ -9,8 +9,7 @@
   <meta name="author" content="Jimmy Huang">
 
   
-  <meta name="description" content="Title1
-1111111111 111 222 AAA BBB CCC ">
+  <meta name="description" content="Code Verification Certificate (CVC) 是 cable modem 作 secure software download (SSD) 時提供給 CM 驗證 image 用的憑證, 當 manufacturer 要出新的 software 時, 會用 private &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -102,6 +101,46 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2015/12/30/generate-docsis-cvc/">Generate DOCSIS CVC</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-12-30T22:18:09+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:18 pm</span></time>
+        
+           | <a href="/blog/2015/12/30/generate-docsis-cvc/#disqus_thread"
+             data-disqus-identifier="http://jianiau.github.io/blog/2015/12/30/generate-docsis-cvc/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Code Verification Certificate (CVC) 是 cable modem 作 secure software download (SSD) 時提供給 CM 驗證 image 用的憑證, 
+當 manufacturer 要出新的 software 時, 會用 private key 簽名, 並把含有相對應 public key 的 certificate (也就是 CVC) 丟給 CM 驗證, CM 先檢查 CVC, 確認 CVC 正確後就能用 CVC 裡面的 public key 檢查 software 的簽名是否正確, 利用這種方式來驗證 software 的可靠性與正確性</p>
+
+<p>通常, 這個 private key 都會放在一個需要重重關卡才能進入的地方, 所以要測試 CM SSD 功能時會用 Test CVC, 製作 Test CVC 的步驟很簡單, 只要裝好 <a href="https://www.openssl.org/community/binaries.html">OpenSSL</a> 就可以開始製作, CableLabs 有詳細的步驟說明</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/30/generate-docsis-cvc/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2015/12/27/hello-world/">Hello World</a></h1>
     
     
@@ -156,6 +195,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/generate-docsis-cvc/">Generate DOCSIS CVC</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2015/12/27/hello-world/">Hello World</a>

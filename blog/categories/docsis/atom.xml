@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Docsis, | Jimmy's Blog]]></title>
+  <link href="http://jianiau.github.io/blog/categories/docsis/atom.xml" rel="self"/>
+  <link href="http://jianiau.github.io/"/>
+  <updated>2015-12-31T13:27:47+08:00</updated>
+  <id>http://jianiau.github.io/</id>
+  <author>
+    <name><![CDATA[Jimmy Huang]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Generate DOCSIS CVC]]></title>
+    <link href="http://jianiau.github.io/blog/2015/12/30/generate-docsis-cvc/"/>
+    <updated>2015-12-30T22:18:09+08:00</updated>
+    <id>http://jianiau.github.io/blog/2015/12/30/generate-docsis-cvc</id>
+    <content type="html"><![CDATA[<p>Code Verification Certificate (CVC) 是 cable modem 作 secure software download (SSD) 時提供給 CM 驗證 image 用的憑證, 
+當 manufacturer 要出新的 software 時, 會用 private key 簽名, 並把含有相對應 public key 的 certificate (也就是 CVC) 丟給 CM 驗證, CM 先檢查 CVC, 確認 CVC 正確後就能用 CVC 裡面的 public key 檢查 software 的簽名是否正確, 利用這種方式來驗證 software 的可靠性與正確性</p>
+
+<p>通常, 這個 private key 都會放在一個需要重重關卡才能進入的地方, 所以要測試 CM SSD 功能時會用 Test CVC, 製作 Test CVC 的步驟很簡單, 只要裝好 <a href="https://www.openssl.org/community/binaries.html">OpenSSL</a> 就可以開始製作, CableLabs 有詳細的步驟說明</p>
+
+<!-- more -->
+
+<p>到 <a href="http://cablelabs.com/resources/digital-certificate-issuance-service/">Cablelabs</a> 下載 Test Certificates</p>
+
+<h2 id="legacy-pki-docsis-30-">Legacy PKI (DOCSIS 3.0 以前的版本)</h2>
+
+<p><strong>1. 製作 csr_config.txt</strong></p>
+
+<p><figure class='code'><figcaption><span>csr_config.txt </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="k">[ req ]</span>
+</span><span class='line'><span class="na">default_keyfile</span> <span class="o">=</span> <span class="s">TEST_DOCSIS_MFR_CVC_PRIVATEKEY.pem</span>
+</span><span class='line'><span class="na">default_md</span> <span class="o">=</span> <span class="s">sha1</span>
+</span><span class='line'><span class="na">prompt</span> <span class="o">=</span> <span class="s">no</span>
+</span><span class='line'><span class="na">distinguished_name</span> <span class="o">=</span> <span class="s">req_DN&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">&lt;h1 id</span><span class="o">=</span><span class="s">&quot;certificate-distinguished-name&quot;&gt;Certificate Distinguished Name&lt;/h1&gt;</span>
+</span><span class='line'><span class="err">&lt;p&gt;</span><span class="k">[req_DN]</span>
+</span><span class='line'><span class="na">C</span> <span class="o">=</span> <span class="s">TW</span>
+</span><span class='line'><span class="na">O</span> <span class="o">=</span>  <span class="s">Jimmy Test</span>
+</span><span class='line'><span class="na">OU</span> <span class="o">=</span> <span class="s">DOCSIS</span>
+</span><span class='line'><span class="na">CN</span> <span class="o">=</span> <span class="s">TEST Code Verification Certificate</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>O 的值要和 CM 的 manufacturer’s organizationName 一致</p>
+
+<p><strong>2. 用以下指令產生 CSR 和 private key</strong></p>
+
+<p><figure class='code'><figcaption><span>bash </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>openssl req -newkey rsa:2048 -config csr_config.txt -out csr.pem -nodes
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>如果是要製作實際在用的 CVC, 作到這一步就可以了, 把 private key 保管好, csr 送給 CableLabs, <a href="http://cablelabs.com/wp-content/uploads/2013/11/DCAA_DOCSIS.pdf">簽約</a>, 繳費 CableLabs 就會處理接下來的事情, 若是要做 Test CVC 就繼續往下做</p>
+
+<p><strong>3. 製作 extension 欄位的設定檔 ext.txt</strong>
+<figure class='code'><figcaption><span>ext.txt</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="na">extendedKeyUsage</span> <span class="o">=</span> <span class="s">critical,codeSigning</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p><strong>4.用 Test DOCSIS Root Key 簽發憑證</strong></p>
+
+<p><figure class='code'><figcaption><span>bash </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>openssl x509 -req -days <span class="m">3653</span> -in csr.pem -CA TEST_DOCSIS_CABLE_MODEM_ROOT_CA.PEM <span class="se">\</span>
+</span><span class='line'>-CAkey TEST_DOCSIS_CABLE_MODEM_ROOT_CA_PrivateKey.PEM -CAcreateserial <span class="se">\</span>
+</span><span class='line'>-extfile ext.txt -sha1 -out TEST_DOCSIS_MFR_CVC.crt
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>然後就能拿 TEST_DOCSIS_MFR_CVC.crt 和 TEST_DOCSIS_MFR_CVC_PRIVATEKEY.pem 去 sign image 了</p>
+
+<h2 id="new-pki-docsis-31">New PKI (DOCSIS 3.1)</h2>
+
+<p>製作 DOCSIS 3.1 的 CVC 方法和 3.0 的差不多, 設定檔和 CA 換一下就可以了</p>
+
+<p><strong>1. 製作 csr_config.txt</strong></p>
+
+<p><figure class='code'><figcaption><span>csr_config.txt</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="k">[ req ]</span>
+</span><span class='line'><span class="na">default_keyfile</span> <span class="o">=</span> <span class="s">TEST_DOCSIS31_MFR_CVC_PRIVATEKEY.PEM</span>
+</span><span class='line'><span class="na">default_md</span> <span class="o">=</span> <span class="s">sha256</span>
+</span><span class='line'><span class="na">prompt</span> <span class="o">=</span> <span class="s">no</span>
+</span><span class='line'><span class="na">string_mask</span> <span class="o">=</span> <span class="s">nombstr</span>
+</span><span class='line'><span class="na">distinguished_name</span> <span class="o">=</span> <span class="s">req_DN&lt;/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="na">&lt;h1 id</span><span class="o">=</span><span class="s">&quot;certificate-distinguished-name-1&quot;&gt;Certificate Distinguished Name&lt;/h1&gt;</span>
+</span><span class='line'><span class="err">&lt;p&gt;</span><span class="k">[req_DN]</span>
+</span><span class='line'><span class="na">C</span> <span class="o">=</span> <span class="s">TW</span>
+</span><span class='line'><span class="na">O</span> <span class="o">=</span> <span class="s">Jimmy Test</span>
+</span><span class='line'><span class="na">CN</span> <span class="o">=</span> <span class="s">TEST Code Verification Certificate</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>3.1 的演算法變成 SHA-256</p>
+
+<p><strong>2. 產生 CSR 和 private key</strong></p>
+
+<p><figure class='code'><figcaption><span>bash </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>openssl req -newkey rsa:2048 -config csr_config.txt -out csr.pem -nodes
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>3.1 CVC RSA key length 變為 2048 bits</p>
+
+<p><strong>3. 製作 extension 欄位的設定檔 ext.txt</strong></p>
+
+<p><figure class='code'><figcaption><span>ext.txt</span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ini'><span class='line'><span class="na">extendedKeyUsage</span><span class="o">=</span><span class="s">critical,codeSigning</span>
+</span><span class='line'><span class="na">authorityKeyIdentifier</span><span class="o">=</span><span class="s">keyid,issuer</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>3.1 CVC 多了 authorityKeyIdentifier 這個 extension, authorityKeyIdentifier 的值會是 CVC CA 的 subjectKeyIdentifier<sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup></p>
+
+<p><strong>4. 用 Test DOCSIS CVC CA Key 簽發憑證</strong></p>
+
+<p><figure class='code'><figcaption><span>bash </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>openssl x509 -req -days <span class="m">3653</span> -in csr.pem -CA TEST_CABLELABS_CVC_CERTIFICATION_AUTHORITY_PEM.CRT <span class="se">\</span>
+</span><span class='line'>-CAkey TEST_CABLELABS_CVC_CERTIFICATION_AUTHORITY_PRIVATEKEY.PEM -CAcreateserial -extfile ext.txt <span class="se">\</span>
+</span><span class='line'>-sha256 -out TEST_DOCSIS31_MFR_CVC_PEM.CRT
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>3.1 CVC 的 chain 多了一張 CVC CA, 不再是直接由 Root 簽發, 製作 signed image 時除了 CVC 和 private key 之外也要把 CVC CA 包進去</p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p><a href="https://www.openssl.org/docs/manmaster/apps/x509v3_config.html#Authority-Key-Identifier">OpenSSL x509v3 config</a> <a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+]]></content>
+  </entry>
+  
+</feed>
