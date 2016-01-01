@@ -1,0 +1,13 @@
+[ req ]
+default_keyfile = TEST_DOCSIS31_MFR_CVC_PRIVATEKEY.PEM
+default_md = sha256
+prompt = no
+string_mask = nombstr
+distinguished_name = req_DN
+
+# Certificate Distinguished Name
+[req_DN]
+C = TW
+O = Jimmy Test
+CN = TEST Code Verification Certificate
+
