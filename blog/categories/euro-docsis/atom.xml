@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Euro-docsis | Jimmy's blog]]></title>
+  <link href="http://jianiau.github.io/blog/categories/euro-docsis/atom.xml" rel="self"/>
+  <link href="http://jianiau.github.io/"/>
+  <updated>2016-01-03T23:58:08+08:00</updated>
+  <id>http://jianiau.github.io/</id>
+  <author>
+    <name><![CDATA[Jimmy Huang]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[EuroDOCSIS Certificate]]></title>
+    <link href="http://jianiau.github.io/blog/2016/01/03/eurodocsis-certificate/"/>
+    <updated>2016-01-03T23:34:51+08:00</updated>
+    <id>http://jianiau.github.io/blog/2016/01/03/eurodocsis-certificate</id>
+    <content type="html"><![CDATA[<p>EuroDOCSIS 的 BPI+ 規範基本上和 DOCSIS 是一樣的, 只是 certificates 的一些欄位名稱換一下而已</p>
+
+<p>EuroDOCSIS Root Certificate</p>
+
+<pre><code>countryName=BE
+organizationName=tComLabs – Euro-DOCSIS
+organizationalUnitName=Cable Modems
+commonName= Euro-DOCSIS Cable Modem Root CA
+</code></pre>
+
+<p>EuroDOCSIS Manufacturer Certificate</p>
+
+<pre><code>countryName=&lt;Country of Manufacturer&gt;
+[stateOrProvinceName=&lt;state/province&gt;]
+[localityName=&lt;City&gt;]
+organizationName=&lt;Company Name&gt;
+organizationalUnitName=Euro-DOCSIS
+[organizationalUnitName=&lt;Manufacturing Location&gt;]
+commonName=&lt;Company Name&gt; Cable Modem Root Certificate Authority
+</code></pre>
+
+<p class="info">
+比較特別是 oganizationalUnitName 的值也可以是 DOCSIS
+</p>
+
+<p>EuroDOCSIS Code Verification Certificate</p>
+
+<pre><code>countryName = &lt;country&gt;
+organizationName = &lt;Manufacturer organizationName from CA Certificate&gt;
+organizationalUnitName = Euro-DOCSIS
+commonName = Code Verification Certificate
+</code></pre>
+
+<h2 id="section">參考資料</h2>
+
+<ul>
+  <li>EuroDOCSIS.BPI+Req.pdf Rev:7.0</li>
+</ul>
+]]></content>
+  </entry>
+  
+</feed>

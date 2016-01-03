@@ -9,7 +9,8 @@
   <meta name="author" content="Jimmy Huang">
 
   
-  <meta name="description" content="DOCSIS 是從 DOCSIS 1.1 (BPI+) 開始使用 certificate 來驗證 CM 和 CMTS 之間金鑰交換的訊息, 在 DOCSIS 1.0 (BPI), CM 送出 AUTH-REQ 時沒有憑證, 直接丟出 RSA public key, BPI+ 加強了這一階段的驗證 &hellip;">
+  <meta name="description" content="EuroDOCSIS 的 BPI+ 規範基本上和 DOCSIS 是一樣的, 只是 certificates 的一些欄位名稱換一下而已 EuroDOCSIS Root Certificate countryName=BE
+organizationName=tComLabs – Euro-DOCSIS &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -99,6 +100,75 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/03/eurodocsis-certificate/">EuroDOCSIS Certificate</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-03T23:34:51+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>11:34 pm</span></time>
+        
+           | <a href="/blog/2016/01/03/eurodocsis-certificate/#disqus_thread"
+             data-disqus-identifier="http://jianiau.github.io/blog/2016/01/03/eurodocsis-certificate/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>EuroDOCSIS 的 BPI+ 規範基本上和 DOCSIS 是一樣的, 只是 certificates 的一些欄位名稱換一下而已</p>
+
+<p>EuroDOCSIS Root Certificate</p>
+
+<pre><code>countryName=BE
+organizationName=tComLabs – Euro-DOCSIS
+organizationalUnitName=Cable Modems
+commonName= Euro-DOCSIS Cable Modem Root CA
+</code></pre>
+
+<p>EuroDOCSIS Manufacturer Certificate</p>
+
+<pre><code>countryName=&lt;Country of Manufacturer&gt;
+[stateOrProvinceName=&lt;state/province&gt;]
+[localityName=&lt;City&gt;]
+organizationName=&lt;Company Name&gt;
+organizationalUnitName=Euro-DOCSIS
+[organizationalUnitName=&lt;Manufacturing Location&gt;]
+commonName=&lt;Company Name&gt; Cable Modem Root Certificate Authority
+</code></pre>
+
+<p class="info">
+比較特別是 oganizationalUnitName 的值也可以是 DOCSIS
+</p>
+
+<p>EuroDOCSIS Code Verification Certificate</p>
+
+<pre><code>countryName = &lt;country&gt;
+organizationName = &lt;Manufacturer organizationName from CA Certificate&gt;
+organizationalUnitName = Euro-DOCSIS
+commonName = Code Verification Certificate
+</code></pre>
+
+<h2 id="section">參考資料</h2>
+
+<ul>
+  <li>EuroDOCSIS.BPI+Req.pdf Rev:7.0</li>
+</ul>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -252,6 +322,10 @@ Cablelabs 已經不再簽發 Manufacturer CA certificate, 只剩下 centralized 
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/01/03/eurodocsis-certificate/">EuroDOCSIS Certificate</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/01/03/docsis-certificate/">DOCSIS Certificate</a>
       </li>
     
@@ -271,7 +345,8 @@ Cablelabs 已經不再簽發 Manufacturer CA certificate, 只剩下 centralized 
 <h1>分類</h1>
 <ul>
   <li><a href='/blog/categories/docsis'>Docsis (2)</a></li>
-  <li><a href='/blog/categories/security'>Security (2)</a></li>
+  <li><a href='/blog/categories/euro-docsis'>Euro-docsis (1)</a></li>
+  <li><a href='/blog/categories/security'>Security (3)</a></li>
 </ul>
 </section>
 
