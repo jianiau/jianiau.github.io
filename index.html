@@ -9,7 +9,7 @@
   <meta name="author" content="Jimmy Huang">
 
   
-  <meta name="description" content="Code Verification Certificate (CVC) 是 cable modem 作 secure software download (SSD) 時提供給 CM 驗證 image 用的憑證, 當 manufacturer 要出新的 software 時, 會用 private &hellip;">
+  <meta name="description" content="DOCSIS 是從 DOCSIS 1.1 (BPI+) 開始使用 certificate 來驗證 CM 和 CMTS 之間金鑰交換的訊息, 在 DOCSIS 1.0 (BPI), CM 送出 AUTH-REQ 時沒有憑證, 直接丟出 RSA public key, BPI+ 加強了這一階段的驗證 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -62,7 +62,11 @@
 
   
 
+
+<link href="/stylesheets/data-table.css" media="screen, projection" rel="stylesheet" type="text/css" />
 </head>
+
+
 
 <body   >
   <header role="banner"><hgroup>
@@ -95,6 +99,57 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/03/docsis-certificate/">DOCSIS Certificate</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-03T01:10:13+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:10 am</span></time>
+        
+           | <a href="/blog/2016/01/03/docsis-certificate/#disqus_thread"
+             data-disqus-identifier="http://jianiau.github.io/blog/2016/01/03/docsis-certificate/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>DOCSIS 是從 DOCSIS 1.1 (BPI+) 開始使用 certificate 來驗證 CM 和 CMTS 之間金鑰交換的訊息, 在 DOCSIS 1.0 (BPI), CM 送出 AUTH-REQ 時沒有憑證, 直接丟出 RSA public key, BPI+ 加強了這一階段的驗證, CM 要送出 AUTH-INFO (CA certificate), AUTH-REQ (CM certificate), 讓 CMTS 驗證 CM 來源是否正確</p>
+
+<h2 id="bpi-certificate-">BPI+ Certificate 架構</h2>
+
+<p>BPI+ certificate 共有 3 層</p>
+
+<ul>
+  <li>DOCSIS Root CA certificate</li>
+  <li>Manufacturer CA (distributed model) or CableLabs Mfg CA (centralized model) certificates</li>
+  <li>CM Device certificate</li>
+</ul>
+
+<p class="info">
+Cablelabs 已經不再簽發 Manufacturer CA certificate, 只剩下 centralized model, 另外 Root 除了簽發 Mfg CA certificate 以外, 也用來簽發 Code Verification Certificate (Legacy-PKI) 和 CableLabs DOCSIS CVC CA Certificate (New-PKI)
+</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/03/docsis-certificate/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -197,6 +252,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/01/03/docsis-certificate/">DOCSIS Certificate</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/12/30/generate-docsis-cvc/">Generate DOCSIS CVC</a>
       </li>
     
@@ -211,8 +270,8 @@
 <section>
 <h1>分類</h1>
 <ul>
-  <li><a href='/blog/categories/docsis'>Docsis (1)</a></li>
-  <li><a href='/blog/categories/security'>Security (1)</a></li>
+  <li><a href='/blog/categories/docsis'>Docsis (2)</a></li>
+  <li><a href='/blog/categories/security'>Security (2)</a></li>
 </ul>
 </section>
 

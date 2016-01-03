@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Docsis | Jimmy's blog]]></title>
   <link href="http://jianiau.github.io/blog/categories/docsis/atom.xml" rel="self"/>
   <link href="http://jianiau.github.io/"/>
-  <updated>2016-01-01T18:50:05+08:00</updated>
+  <updated>2016-01-03T18:58:11+08:00</updated>
   <id>http://jianiau.github.io/</id>
   <author>
     <name><![CDATA[Jimmy Huang]]></name>
@@ -12,6 +12,296 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[DOCSIS Certificate]]></title>
+    <link href="http://jianiau.github.io/blog/2016/01/03/docsis-certificate/"/>
+    <updated>2016-01-03T01:10:13+08:00</updated>
+    <id>http://jianiau.github.io/blog/2016/01/03/docsis-certificate</id>
+    <content type="html"><![CDATA[<p>DOCSIS 是從 DOCSIS 1.1 (BPI+) 開始使用 certificate 來驗證 CM 和 CMTS 之間金鑰交換的訊息, 在 DOCSIS 1.0 (BPI), CM 送出 AUTH-REQ 時沒有憑證, 直接丟出 RSA public key, BPI+ 加強了這一階段的驗證, CM 要送出 AUTH-INFO (CA certificate), AUTH-REQ (CM certificate), 讓 CMTS 驗證 CM 來源是否正確</p>
+
+<h2 id="bpi-certificate-">BPI+ Certificate 架構</h2>
+
+<p>BPI+ certificate 共有 3 層</p>
+
+<ul>
+  <li>DOCSIS Root CA certificate</li>
+  <li>Manufacturer CA (distributed model) or CableLabs Mfg CA (centralized model) certificates</li>
+  <li>CM Device certificate</li>
+</ul>
+
+<p class="info">
+Cablelabs 已經不再簽發 Manufacturer CA certificate, 只剩下 centralized model, 另外 Root 除了簽發 Mfg CA certificate 以外, 也用來簽發 Code Verification Certificate (Legacy-PKI) 和 CableLabs DOCSIS CVC CA Certificate (New-PKI)
+</p>
+
+<!-- more -->
+
+<h2 id="certificate-">Certificate 格式</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">X.509 v3 Field</th>
+      <th style="text-align: left">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">tbsCertificate.version</td>
+      <td style="text-align: left">Indicates the certificate version. Always set to v3 (value is 2)</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">tbsCertificate.serialNumber</td>
+      <td style="text-align: left">Unique integer assigned by the issuing CA to the certificate</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">tbsCertificate.signature</td>
+      <td style="text-align: left">OID and optional parameters defining the algorithm used to sign the certificate. This field contains the same algorithm identifier as the signatureAlgorithm field below</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">tbsCertificate.issuer</td>
+      <td style="text-align: left">Distinguished Name of the CA that issued the certificate</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Certificate.validity</td>
+      <td style="text-align: left">Defines when the certificate becomes active and when it expires</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">tbsCertificate.subject</td>
+      <td style="text-align: left">Distinguished Name identifying the entity whose public key is certified in the subjectPublicKeyInfo field</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">tbsCertificate.subjectPublicKeyInfo</td>
+      <td style="text-align: left">Field contains the public key material (public key and parameters) and the identifier of the algorithm with which the key is used</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">tbsCertificate.issuerUniqueID</td>
+      <td style="text-align: left">Optional field to allow reuse of issuer names over time</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">tbsCertificate.subjectUnique ID</td>
+      <td style="text-align: left">Optional field to allow reuse of subject names over time</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">tbsCertificate.extensions</td>
+      <td style="text-align: left">Extension data</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SignatureAlgorithm</td>
+      <td style="text-align: left">OID and optional parameters defining the algorithm used to sign the certificate. This field contains the same algorithm identifier as the signature field in tbsCertificate</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">signatureValue</td>
+      <td style="text-align: left">Digital signature computed over the ASN.1 DER-encoded tbsCertificate</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><br /></p>
+
+<dl>
+  <dt><strong>signature</strong></dt>
+  <dd>
+    <p>DOCSIS 3.0 以前的 certificates 用的都是 <a href="http://www.alvestrand.no/objectid/1.2.840.113549.1.1.5.html">sha1WithRSAEncryption</a>, DOCSIS 3.1 開始改成 <a href="http://www.alvestrand.no/objectid/1.2.840.113549.1.1.11.html">sha256WithRSAEncryption</a></p>
+  </dd>
+  <dt><strong>validity</strong></dt>
+  <dd>
+    <p>DOCSIS 3.0 以前使用 ASN.1 UTCTime 編碼, 時間範圍是 1950~2049, 3.1 之後時間會超過 2050, 超過的部份改用 GeneralizedTime 編碼</p>
+  </dd>
+  <dt><strong>issuer, subject</strong></dt>
+  <dd>
+    <p>這裡的文字編碼一律先採用 PrintableString set, 若出現其他字元 DOCSIS 3.0 用 T.61/TeletexString, DOCSIS 3.1 用 UTF8String</p>
+  </dd>
+</dl>
+
+<p>Legacy-PKI</p>
+
+<pre><code>DOCSIS Root Certificate  
+  countryName=US
+  organizationName=Data Over Cable Service Interface Specifications
+  organizationalUnitName=Cable Modems
+  commonName=DOCSIS Cable Modem Root Certificate Authority
+ 
+CableLabs Mfg CA Certificate
+  countryName=US
+  organizationName=CableLabs, Inc.
+  organizationalUnitName=DOCSIS
+  organizationalUnitName=D CA00001
+  commonName=CableLabs, Inc. Cable Modem Root Certificate
+
+Manufacturer CA Certificate
+  countryName=&lt;Country of Manufacturer&gt;
+  [stateOrProvinceName=&lt;state/province&gt;]
+  [localityName=&lt;City&gt;]
+  organizationName=&lt;Company Name&gt;
+  organizationalUnitName=DOCSIS
+  [organizationalUnitName=&lt;Manufacturing Location&gt;]
+  commonName=&lt;Company Name&gt; [&lt;Serial Identifier&gt;] Cable Modem Root Certificate Authority [&lt;SerialIdentifier&gt;]
+
+CM Device Certificate
+  countryName=&lt;Country of Manufacturer&gt;
+  organizationName=&lt;Company Name&gt;
+  organizationalUnitName=&lt;manufacturing location&gt;
+  [commonName=&lt;Serial Number&gt;]
+  commonName=&lt;MAC Address&gt;
+
+Code Verification Certificate
+  countryName＝&lt;country of subject company&gt;
+  organizationName=&lt;subject code-signing agent&gt;
+  organizationalUnitName=DOCSIS
+  commonName=Code Verification Certificate
+</code></pre>
+
+<p>用 <code>[]</code> 標示的欄位可以省略, 用<code>&lt;&gt;</code> 標示的欄位要填入相對應的值, countryName 是 2 碼的 <a href="http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html">country code</a>, CM MAC 格式範例為 00:55:66:11:22:33</p>
+
+<p class="info">
+DOCSIS 3.0 之後的 CM certificate 已經不再使用 commonName=Serial Number
+</p>
+
+<p>New-PKI</p>
+
+<pre><code>CableLabs Root CA Certificate
+  c=US
+  o=CableLabs
+  ou=Root CA01
+  cn=CableLabs Root Certification Authority
+
+CableLabs Device CACertificate
+  c=US
+  o=CableLabs
+  ou=Device CA01
+  cn=CableLabs Device Certification Authority
+
+CM Device Certificate
+  c=&lt;Country of Manufacturer&gt;
+  o=&lt;Company Name&gt;
+  ou=&lt;Manufacturing Location&gt;
+  cn=&lt;MAC Address&gt;
+
+CableLabs DOCSIS CVC CA Certificate
+  c=US
+  o=CableLabs
+  ou=CVC CA01
+  cn=CableLabs CVC Certification Authority
+
+Code Verification Certificate
+  c=&lt;Country of Manufacturer&gt;
+  o=&lt;Company Name&gt;
+  cn=Code Verification Certificate
+</code></pre>
+
+<p class="info">
+DOCSIS 3.1 只有 Centralized Model, 沒有 Manufacturer CA certificate 了, CVC 的 chain 則是多了一層 CableLabs DOCSIS CVC CA
+</p>
+
+<dl>
+  <dt><strong>subjectPublicKeyInfo</strong></dt>
+  <dd>
+    <p>所有的 DOCSIS certificate 用的都是 <a href="http://www.alvestrand.no/objectid/1.2.840.113549.1.1.1.html">rsaEncryption</a>, 差別在於 key 的長度不同</p>
+  </dd>
+  <dt><strong>issuerUniqueID,subjectUniqueID</strong></dt>
+  <dd>
+    <p>所有的 DOCSIS certificates 都沒用到這兩個欄位</p>
+  </dd>
+</dl>
+
+<p><strong>extensions</strong></p>
+
+<p>以下只列出必須有的 extension</p>
+
+<p>Legacy-PKI</p>
+
+<pre><code>DOCSIS Root CA Certificate
+  X509v3 extensions:
+      X509v3 Basic Constraints: critical
+          CA:TRUE, pathlen:1
+      X509v3 Key Usage: critical
+          Certificate Sign, CRL Sign
+
+CableLabs Mfg CA Certificate
+   X509v3 extensions:
+       X509v3 Basic Constraints: critical
+           CA:TRUE, pathlen:0
+       X509v3 Key Usage: critical
+           Certificate Sign, CRL Sign
+
+Manufacturer CA Certificates
+  X509v3 extensions:
+      X509v3 Basic Constraints: critical
+          CA:TRUE, pathlen:0
+      X509v3 Key Usage: critical
+          Certificate Sign, CRL Sign
+
+Code Verification Certificate
+  X509v3 extensions:
+      X509v3 Extended Key Usage: critical
+          Code Signing
+</code></pre>
+
+<p class="info">
+Manufacturer CA Certificates 也可以沒有這些 extensions
+</p>
+
+<p>New-PKI</p>
+
+<pre><code>CableLabs Root CA Certificate
+  X509v3 extensions:
+      X509v3 Basic Constraints: critical
+          CA:TRUE
+      X509v3 Key Usage: critical
+          Certificate Sign, CRL Sign
+      X509v3 Subject Key Identifier:
+          Calculated per Method 1
+
+CableLabs Device CACertificate
+  X509v3 extensions:
+      X509v3 Key Usage: critical
+          Certificate Sign, CRL Sign
+      X509v3 Basic Constraints: critical
+          CA:TRUE, pathlen:0
+      X509v3 Subject Key Identifier: 
+          Calculated per Method 1
+      X509v3 Authority Key Identifier:
+          Calculated per Method 1
+
+CM Device Certificate
+  X509v3 extensions:
+      X509v3 Key Usage: critical
+        Digital Signature, Key Encipherment
+      X509v3 Authority Key Identifier:
+        Calculated per Method 1
+
+CableLabs DOCSIS CVC CA Certificate
+  X509v3 extensions:
+      X509v3 Key Usage: critical
+          Certificate Sign, CRL Sign
+      X509v3 Basic Constraints: critical
+          CA:TRUE, pathlen:0
+      X509v3 Subject Key Identifier:
+          Calculated per Method 1 
+      X509v3 Authority Key Identifier: 
+          Calculated per Method 1
+
+Code Verification Certificate
+  X509v3 extensions:
+      X509v3 Extended Key Usage: critical
+          Code Signing
+      X509v3 Authority Key Identifier:
+        Calculated per Method 1
+</code></pre>
+
+<p class="info">
+Authority, Subject Key Identifier 計算方法 <a href="https://tools.ietf.org/html/rfc5280#section-4.2.1.2">RFC5280</a>
+</p>
+
+<h2 id="section">參考資料</h2>
+<ul>
+  <li>CM-SP-BPI+-C01-081104</li>
+  <li>CM-SP-SECv3.0-I15-130808</li>
+  <li>CM-SP-SECv3.1-I05-151210</li>
+</ul>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Generate DOCSIS CVC]]></title>
