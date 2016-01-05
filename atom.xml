@@ -4,7 +4,7 @@
   <title><![CDATA[Jimmy's blog]]></title>
   <link href="http://jianiau.github.io/atom.xml" rel="self"/>
   <link href="http://jianiau.github.io/"/>
-  <updated>2016-01-03T23:58:08+08:00</updated>
+  <updated>2016-01-05T21:36:42+08:00</updated>
   <id>http://jianiau.github.io/</id>
   <author>
     <name><![CDATA[Jimmy Huang]]></name>
@@ -499,46 +499,6 @@ Authority, Subject Key Identifier 計算方法 <a href="https://tools.ietf.org/h
     </li>
   </ol>
 </div>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Hello World]]></title>
-    <link href="http://jianiau.github.io/blog/2015/12/27/hello-world/"/>
-    <updated>2015-12-27T16:52:15+08:00</updated>
-    <id>http://jianiau.github.io/blog/2015/12/27/hello-world</id>
-    <content type="html"><![CDATA[<h1 id="title1">Title1</h1>
-<p>1111111111</p>
-
-<h2 id="section">111</h2>
-
-<h3 id="section-1">222</h3>
-
-<ul>
-  <li>AAA</li>
-  <li>BBB</li>
-  <li>CCC</li>
-</ul>
-
-<!--more-->
-<p># Title2
-22222222222</p>
-
-<h2 id="section-2">222</h2>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span>112233 </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-</pre></td><td class="code"><pre><code class="tcl"><span class="line"><span class="nb">package</span> require ans
-</span><span class="line"><span class="nv">ans</span><span class="o">::</span>integer as bb
-</span><span class="line"><span class="nb">puts</span> zz<span class="err">=</span><span class="nv">$zz</span>
-</span><span class="line"><span class="k">expr</span> <span class="mi">1</span><span class="o">+</span><span class="mi">1</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<script type="math/tex; mode=display">f(x \; | \; \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi} } \; e^{ -\frac{(x-\mu)^2}{2\sigma^2} }</script>
-
 ]]></content>
   </entry>
   
