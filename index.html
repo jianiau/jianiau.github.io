@@ -9,8 +9,8 @@
   <meta name="author" content="Jimmy Huang">
 
   
-  <meta name="description" content="EuroDOCSIS 的 BPI+ 規範基本上和 DOCSIS 是一樣的, 只是 certificates 的一些欄位名稱換一下而已 EuroDOCSIS Root Certificate countryName=BE
-organizationName=tComLabs – Euro-DOCSIS &hellip;">
+  <meta name="description" content="簡介 DOCSIS 1.0 BPI 加密使用的是 DES，為了能解開封包內容必須先取得 TEK (raffic Encryption Key)。取得 TEK 是透過 BPKM (Baseline Privacy Key Management) Protocol。
+BPKM 的過程中 CMTS &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -100,6 +100,45 @@ organizationName=tComLabs – Euro-DOCSIS &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/19/docsis-bpi-decrypt-get-tek/">DOCSIS BPI 解密 - 取得 TEK</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-19T23:53:55+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:53 pm</span></time>
+        
+           | <a href="/blog/2016/03/19/docsis-bpi-decrypt-get-tek/#disqus_thread"
+             data-disqus-identifier="http://jianiau.github.io/blog/2016/03/19/docsis-bpi-decrypt-get-tek/">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2 id="section">簡介</h2>
+
+<p>DOCSIS 1.0 BPI 加密使用的是 DES，為了能解開封包內容必須先取得 TEK (raffic Encryption Key)。取得 TEK 是透過 BPKM (Baseline Privacy Key Management) Protocol。
+BPKM 的過程中 CMTS 會使用 RSA 加密 Auth Key，CM 解開 Auth Key 後算出 KEK (Key Encryption Key)，接著再用 KEK 解開 TEK，之後就能用 TEK 進行加密。
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/19/docsis-bpi-decrypt-get-tek/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -274,6 +313,10 @@ Cablelabs 已經不再簽發 Manufacturer CA certificate, 只剩下 centralized 
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/03/19/docsis-bpi-decrypt-get-tek/">DOCSIS BPI 解密 - 取得 TEK</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/01/03/eurodocsis-certificate/">EuroDOCSIS Certificate</a>
       </li>
     
@@ -292,9 +335,9 @@ Cablelabs 已經不再簽發 Manufacturer CA certificate, 只剩下 centralized 
 <section>
 <h1>分類</h1>
 <ul>
-  <li><a href='/blog/categories/docsis'>Docsis (2)</a></li>
+  <li><a href='/blog/categories/docsis'>Docsis (3)</a></li>
   <li><a href='/blog/categories/euro-docsis'>Euro-docsis (1)</a></li>
-  <li><a href='/blog/categories/security'>Security (3)</a></li>
+  <li><a href='/blog/categories/security'>Security (4)</a></li>
 </ul>
 </section>
 

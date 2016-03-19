@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Security | Jimmy's blog]]></title>
   <link href="http://jianiau.github.io/blog/categories/security/atom.xml" rel="self"/>
   <link href="http://jianiau.github.io/"/>
-  <updated>2016-01-05T21:47:44+08:00</updated>
+  <updated>2016-03-20T04:48:03+08:00</updated>
   <id>http://jianiau.github.io/</id>
   <author>
     <name><![CDATA[Jimmy Huang]]></name>
@@ -12,6 +12,177 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[DOCSIS BPI 解密 - 取得 TEK]]></title>
+    <link href="http://jianiau.github.io/blog/2016/03/19/docsis-bpi-decrypt-get-tek/"/>
+    <updated>2016-03-19T23:53:55+08:00</updated>
+    <id>http://jianiau.github.io/blog/2016/03/19/docsis-bpi-decrypt-get-tek</id>
+    <content type="html"><![CDATA[<h2 id="section">簡介</h2>
+
+<p>DOCSIS 1.0 BPI 加密使用的是 DES，為了能解開封包內容必須先取得 TEK (raffic Encryption Key)。取得 TEK 是透過 BPKM (Baseline Privacy Key Management) Protocol。
+BPKM 的過程中 CMTS 會使用 RSA 加密 Auth Key，CM 解開 Auth Key 後算出 KEK (Key Encryption Key)，接著再用 KEK 解開 TEK，之後就能用 TEK 進行加密。
+<!-- more --></p>
+
+<p>以下範例出自 DOCSIS 1.0 Baseline Privacy Interface Specification，擷取到 DOCSIS 封包後只要擁有 CM 的 private key，透過一些操作就能解開封包內容</p>
+
+<p>此範例所用的 private key 如下</p>
+
+<p><figure class='code'><figcaption><span>cm_private_key </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>—–BEGIN PRIVATE KEY—–
+</span><span class='line'>MIIB5gIBADANBgkqhkiG9w0BAQEFAASCAdAwggHMAgEAAmEA0/SEuCPOcDXnqzIw
+</span><span class='line'>QxP//xsmwvh/5uUPIprtgBPYHZW0MIfwtatQ3rHYgrJCqWcz2eXCsSoNQliUYwsR
+</span><span class='line'>DqBVlrHPwH8Ul0a8RBNLXkreRs7ryLY1imabM8IjdfXIaXllAgMBAAECYQCTQM6w
+</span><span class='line'>C5hRlvGzm3OyNoPk3R0p2XEqnbrNJOuZzq+XpjkAeoE+BZ5yiQZNjsEHZj146Wd9
+</span><span class='line'>q+Xo80xwTlz++xUljzdU7doBjsje/mD1ob3obE/FcWGmb6dVySnYyovxxYUCMQDx
+</span><span class='line'>IR7RSf+VM+Vg3kyurvZ1EYuW1UVFlu6Ioz3ZoRdmQq51e8YYCg14ObVemRbGLdsC
+</span><span class='line'>MQDhBs3QCMkVCRSTioyl14S4VhVCOLfnjonL1lafWXYgEH9ebuHD6jFBkOCOJEde
+</span><span class='line'>ub8CMQC/v+rV29aXO9Gomp64OwJaTj2HEMopcMD3f3jr26LT+yro2ijJbRURCjMk
+</span><span class='line'>qvDlYAkCMDIClhkG6tGO/BCyOQHefPOOxhi6jDydFAjGMOgnNLZ5lCUDlY857Ap7
+</span><span class='line'>TTyp2Wa29wIxAJV1icfFAoGlWRmP+soKv7iNG8m5efvRTx+zyjIw19FY7QRkxTWy
+</span><span class='line'>2yGB77D9b/FjJw==
+</span><span class='line'>—–END PRIVATE KEY—–</span></code></pre></td></tr></table></div></figure></p>
+
+<p>DOCSIS 1.0 時沒有使用 certificate 來驗證 CM 的身份，只用了 RSA 加密，所以只要修改 CM mac address，就能冒充其他 CM， DOCSIS 1.1 BPI+ 就加上 certificate，這樣就無法輕易假冒其他 CM 了。</p>
+
+<h2 id="bpkm-protocol">BPKM Protocol</h2>
+
+<p>順利的話 BPKM 要 4 個步驟：Auth Request， Auth Reply, Key Request, 以及 Key Reply。</p>
+
+<h3 id="auth-request">Auth Request</h3>
+
+<p>首先，當 CM 註冊完且需要開啟 BPI 時會送出 Auth Request，內容包含一些基本資訊以及最重要的 RSA Public Key</p>
+
+<p><img src="http://blog.jianiau.net/images/blog/auth_req.png"></p>
+
+<h3 id="auth-reply">Auth Reply</h3>
+
+<p>CMTS 收到 Auth Request 後會產生一把 Auth Key，把 Auth Key 利用 CM 的 RSA Public Key 加密後透過 Auth Reply 傳給 CM。</p>
+
+<p><img src="http://blog.jianiau.net/images/blog/auth_reply.png"></p>
+
+<p>Auth Key 中的 0x07 是 Identifier， 0x0060 是長度 (96 bytes)，真正的資料是 0xce7f8efe … 3ac4c480</p>
+<p class="info">
+DOCSIS 1.0 用的 RSA key 比較短，這個範例中用的是 768 bits，所以加密後的 Auth Key 是 96 bytes。
+</p>
+
+<p>可以利用 OpenSSL 把這段資料解密</p>
+
+<p><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>openssl rsautl -in auth_key -inkey cm_private_key -decrypt -hexdump
+</span><span class='line'>0000 - 3b d5 50 60 bd a2 57 c0-                          ;.P`..W.</span></code></pre></td></tr></table></div></figure></p>
+
+<p>解出來 auth key 是 0x3bd55060bda257c0，利用 auth key 再算出之後步驟要用到的 3 個值，Key Encryption Key, upstream Message Authentication Key, 
+downstream Message Authentication Key。</p>
+
+<p>這 3 把 key 算法都是透過 sha1</p>
+
+<ol>
+  <li>
+    <p>Key Encryption Key <br />
+ 在 auth key 前補上 64 個 0x53 後計算 sha1，再取前 8 bytes 當作 KEK</p>
+  </li>
+  <li>
+    <p>upstream Message Authentication Key <br />
+ 在 auth key 前補上 64 個 0x5c 後計算 sha1</p>
+  </li>
+  <li>
+    <p>downstream Message Authentication Key <br />
+ 在 auth key 前補上 64 個 0x3a 後計算 sha1</p>
+  </li>
+</ol>
+
+<p>利用 tcl 計算
+<figure class='code'><figcaption><span>calckek.tcl </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='tcl'><span class='line'><span class="nb">package</span> require sha1
+</span><span class='line'><span class="k">set</span> auth_key <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">3</span>bd55060bda257c0<span class="k">]</span>
+</span><span class='line'><span class="k">set</span> KEK <span class="k">[</span><span class="nb">string</span> range <span class="k">[</span><span class="nv">sha1</span><span class="o">::</span>sha1 <span class="o">-</span>hex <span class="k">[</span><span class="nb">string</span> repeat <span class="err">\</span>x53 <span class="mi">64</span><span class="k">]</span><span class="nv">$auth_key</span><span class="k">]</span> <span class="mi">0</span> <span class="mi">15</span><span class="k">]</span>
+</span><span class='line'><span class="k">set</span> UAK <span class="k">[</span><span class="nv">sha1</span><span class="o">::</span>sha1 <span class="o">-</span>hex <span class="k">[</span><span class="nb">string</span> repeat <span class="err">\</span>x5c <span class="mi">64</span><span class="k">]</span><span class="nv">$auth_key</span><span class="k">]</span>
+</span><span class='line'><span class="k">set</span> DAK <span class="k">[</span><span class="nv">sha1</span><span class="o">::</span>sha1 <span class="o">-</span>hex <span class="k">[</span><span class="nb">string</span> repeat <span class="err">\</span>x3a <span class="mi">64</span><span class="k">]</span><span class="nv">$auth_key</span><span class="k">]</span><span class="o">&lt;/</span>p<span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nv">p</span><span class="o">&gt;</span>puts <span class="err">“</span>Key Encryption Key: <span class="nv">$KEK</span><span class="err">”</span>
+</span><span class='line'><span class="nb">puts</span> <span class="err">“</span>upstream Message Authentication Key: <span class="nv">$UAK</span><span class="err">”</span>
+</span><span class='line'><span class="nb">puts</span> <span class="err">“</span>downstream Message Authentication Key: <span class="nv">$DAK</span><span class="err">”</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>結果為
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Key Encryption Key: 5f59051d9217d983
+</span><span class='line'>upstream Message Authentication Key: ebff98cd5cd457bbfd12b565ffaaf689d4982614
+</span><span class='line'>downstream Message Authentication Key: 5e4769839eeee4d004a4c12380b05ad18ac92c9c</span></code></pre></td></tr></table></div></figure></p>
+
+<h3 id="key-request">Key Request</h3>
+
+<p>接著 CM 送出 key request，除了一些 CM 的基本資訊外還有在 auth reply 取得的 Key Sequence Number，最後會補上 HMAC digest</p>
+
+<p><img src="http://blog.jianiau.net/images/blog/key_req.png"></p>
+
+<p>這個 HMAC digest 是利用 upstream Message Authentication Key 計算 Key Request 封包，從 Key Request Header 到 SID (0x0773…0c00022260)，使用的演算法是 HMAC-SHA-1</p>
+
+<p class="info">
+CMTS 可以透過這個方式驗證送出 key request 的 CM，因為這個 key 是由 auth key 算出來的，而 auth key 是透過 RSA public key加密，只有擁有該 private key 的 CM 能送出正確的封包。
+</p>
+
+<h3 id="key-reply">Key Reply</h3>
+
+<p>最後 CMTS 確認完 Key Request 沒問題後就把之後要用的 TEK 利用 KEK 加密後送出，這邊使用的演算法是 DES-ECB</p>
+
+<p><img src="http://blog.jianiau.net/images/blog/key_reply.png"></p>
+
+<p>與 key request 類似， key reply 也有一個 HMAC digest 讓 CM 驗證</p>
+
+<p>使用 OpenSSL 解密</p>
+
+<p><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">echo</span> -n -e “<span class="se">\x</span>ab<span class="se">\x</span>b9<span class="se">\x</span>d6<span class="se">\x</span>03<span class="se">\x</span>23<span class="se">\x</span>86<span class="se">\x</span>db<span class="se">\x</span>ce” <span class="p">&amp;</span>gt<span class="p">;</span> tek
+</span><span class='line'>openssl des-ecb -in tek -d -nopad -K 5f59051d9217d983 <span class="p">|</span> hexdump -C
+</span><span class='line'><span class="m">00000000</span>  e6 <span class="m">60</span> 0f d8 <span class="m">85</span> 2e f5 ab                           <span class="p">|</span>.<span class="sb">`</span>……<span class="p">|</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>tcl 有 tclDES 可以用來解密</p>
+
+<p><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='tcl'><span class='line'><span class="nb">package</span> require tclDES
+</span><span class='line'><span class="k">set</span> keyset <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>keyset create <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">5</span>f59051d9217d983<span class="k">]]</span>
+</span><span class='line'><span class="k">set</span> tek <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>decrypt <span class="nv">$keyset</span> <span class="err">\</span>xab<span class="err">\</span>xb9<span class="err">\</span>xd6<span class="err">\</span>x03<span class="err">\</span>x23<span class="err">\</span>x86<span class="err">\</span>xdb<span class="err">\</span>xce ecb<span class="k">]</span>
+</span><span class='line'><span class="nb">binary</span> scan <span class="nv">$tek</span> H<span class="o">*</span> TEK
+</span><span class='line'><span class="nb">puts</span> TEK<span class="err">=</span><span class="nv">$TEK</span>
+</span></code></pre></td></tr></table></div></figure></p>
+
+<p>最後算出來的值為 0xe6600fd8852ef5ab，取得 TEK 後就能解開加密的封包了。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[EuroDOCSIS Certificate]]></title>
