@@ -1,0 +1,566 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>DOCSIS BPI 解密 - 解開 PDU - Jimmy's blog</title>
+  <meta name="author" content="Jimmy Huang">
+
+  
+  <meta name="description" content="簡介
+在DOCSIS BPI 解密 - 取得 TEK中已經把 TEK 解出來，接下來只要使用對的的演算法就能解開加密的封包了。 延續之前的範例，用 Key Reply 裡的參數來解密 加解密參數
+Key Reply 的內容為 其中用來加解密的 key 為 TEK 以及 IV，此範例中 TEK= &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://jianiau.github.io/blog/2016/03/20/docsis-bpi-decrypt-packet-pdu/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Jimmy's blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript"
+   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+  
+
+
+<link href="/stylesheets/data-table.css" media="screen, projection" rel="stylesheet" type="text/css" />
+</head>
+
+
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Jimmy's blog</a></h1>
+  
+    <h2>TCL, DOCSIS 測試筆記</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="jianiau.github.io">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">DOCSIS BPI 解密 - 解開 PDU</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-20T19:56:38+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:56 pm</span></time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://jianiau.github.io">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2 id="section">簡介</h2>
+<p>在<a href="http://blog.jianiau.net/blog/2016/03/19/docsis-bpi-decrypt-get-tek/">DOCSIS BPI 解密 - 取得 TEK</a>中已經把 TEK 解出來，接下來只要使用對的的演算法就能解開加密的封包了。
+<!-- more -->
+延續之前的範例，用 Key Reply 裡的參數來解密</p>
+
+<h2 id="section-1">加解密參數</h2>
+<p>Key Reply 的內容為
+<img src="http://blog.jianiau.net/images/blog/key_reply.png" />
+其中用來加解密的 key 為 TEK 以及 IV，此範例中 TEK=0xe6600fd8852ef5ab IV=0x810e528e1c5fda1a
+其他參數用來指示這組 key 能用多久以及提供一個序號，在 DOCSIS 封包的 header 裡會帶有這個序號標示使用的是那一組 key。
+<img src="http://blog.jianiau.net/images/blog/pdu_eh_privacy.png" />
+真正被加密的部份只有 Packet PDU (Layer 2 Ethernet frame) 中 DA (destination MAC) SA (source MAC) 之後的內容。以下只探討 Packet PDU 的部份。</p>
+
+<h2 id="section-2">加密演算法</h2>
+<p>加密 PDU 使用的是 <a href="https://zh.wikipedia.org/wiki/%E8%B3%87%E6%96%99%E5%8A%A0%E5%AF%86%E6%A8%99%E6%BA%96">DES</a>，這是一種 <a href="https://zh.wikipedia.org/w/index.php?title=%E5%88%86%E7%BB%84%E5%AF%86%E7%A0%81&amp;redirect=no">Block cipher</a>
+有多種<a href="https://zh.wikipedia.org/wiki/%E5%9D%97%E5%AF%86%E7%A0%81%E7%9A%84%E5%B7%A5%E4%BD%9C%E6%A8%A1%E5%BC%8F">工作模式</a>，DES 使用的 block size 為 8 bytes，DOCSIS BPI 用了 CBC 和 CFB 這兩種工作模式。
+由於封包長度不固定，但是使用這種加密方式輸入必須要是 8 bytes 的整數倍，所以會用 2 種工作模式來處理。</p>
+
+<h2 id="cbc-only">CBC only</h2>
+<p>若要加密的內容正好是 8 bytes 的整數倍，直接使用 DES-CBC 加密
+若輸入為</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>DA</td>
+      <td>01 02 03 04 05 06</td>
+    </tr>
+    <tr>
+      <td>SA</td>
+      <td>f1 f2 f3 f4 f5 f6</td>
+    </tr>
+    <tr>
+      <td>Type/Len</td>
+      <td>00 01</td>
+    </tr>
+    <tr>
+      <td>User Data</td>
+      <td>02 03 04 05 06 07 08 09 0a 0b</td>
+    </tr>
+    <tr>
+      <td>CRC</td>
+      <td>88 41 65 06</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><br />則加密後會變成</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>DA</td>
+      <td>01 02 03 04 05 06</td>
+    </tr>
+    <tr>
+      <td>SA</td>
+      <td>f1 f2 f3 f4 f5 f6</td>
+    </tr>
+    <tr>
+      <td>Type/Len</td>
+      <td>0d da</td>
+    </tr>
+    <tr>
+      <td>User Data</td>
+      <td>5a cb d0 5e 55 67 9f 04 d1 b6</td>
+    </tr>
+    <tr>
+      <td>CRC</td>
+      <td>41 3d 4e ed</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><br />使用 tcl 解密</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+</pre></td><td class="code"><pre><code class="tcl"><span class="line"><span class="nb">package</span> require tclDES
+</span><span class="line"><span class="k">set</span> iv  <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">810</span>e528e1c5fda1a<span class="k">]</span>
+</span><span class="line"><span class="k">set</span> keyset <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>keyset create <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> e6600fd8852ef5ab<span class="k">]]</span>
+</span><span class="line"><span class="k">set</span> cipher <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">0</span>dda5acbd05e55679f04d1b6413d4eed <span class="k">]</span>
+</span><span class="line"><span class="k">set</span> plain <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>decrypt <span class="nv">$keyset</span> <span class="nv">$cipher</span> cbc iv<span class="k">]</span>
+</span><span class="line"><span class="nb">binary</span> scan <span class="nv">$plain</span> H<span class="o">*</span> plain
+</span><span class="line"><span class="nb">puts</span> plaintext<span class="err">=</span><span class="nv">$plain</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>plaintext=000102030405060708090a0b88416506</p>
+
+<h2 id="cbc--cfb">CBC + CFB</h2>
+<p>若要加密的內容大於 8 bytes 但不是 8 bytes 的整數倍要分成兩段加密，第一部份是 8 bytes 的整數倍使用 CBC，剩餘的部份使用 CFB。
+若輸入為</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>DA</td>
+      <td>01 02 03 04 05 06</td>
+    </tr>
+    <tr>
+      <td>SA</td>
+      <td>f1 f2 f3 f4 f5 f6</td>
+    </tr>
+    <tr>
+      <td>Type/Len</td>
+      <td>00 01</td>
+    </tr>
+    <tr>
+      <td>User Data</td>
+      <td>02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e</td>
+    </tr>
+    <tr>
+      <td>CRC</td>
+      <td>91 d2 d1 9f</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><br />則加密後會變成</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>DA</td>
+      <td>01 02 03 04 05 06</td>
+    </tr>
+    <tr>
+      <td>SA</td>
+      <td>f1 f2 f3 f4 f5 f6</td>
+    </tr>
+    <tr>
+      <td>Type/Len</td>
+      <td>0d 0a</td>
+    </tr>
+    <tr>
+      <td>User Data</td>
+      <td>5a cb d0 5e 55 67 51 47 46 86 8a 71 e5</td>
+    </tr>
+    <tr>
+      <td>CRC</td>
+      <td>77 ef ac 88</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>首先是 CBC 的部份，和之前作法相同，要加密的資料是 0x0001…0e91 這 16 bytes，剩下的 3 bytes 0xd2d19f 要特別處理，因為 DES 要輸入 8 bytes 整數倍，所以先補 0x00 補到 8 bytes，
+接著再用 DES-CFB 加密 (此時使用的 key 不變，IV 換成 CBC 密文區塊中的最後 8 bytes)，加密完後載取出前 3 bytes 即可，透過照種方式就能讓加密前後的資料長度維持不變。</p>
+
+<p>同樣使用 tcl 解密</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+</pre></td><td class="code"><pre><code class="tcl"><span class="line"><span class="nb">package</span> require tclDES
+</span><span class="line"><span class="c"># CBC 區塊</span>
+</span><span class="line"><span class="k">set</span> iv  <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">810</span>e528e1c5fda1a<span class="k">]</span>
+</span><span class="line"><span class="k">set</span> keyset <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>keyset create <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> e6600fd8852ef5ab<span class="k">]]</span>
+</span><span class="line"><span class="k">set</span> cipher <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">0</span>dda5acbd05e5567514746868a71e577<span class="k">]</span>
+</span><span class="line"><span class="k">set</span> plain <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>decrypt <span class="nv">$keyset</span> <span class="nv">$cipher</span> cbc iv<span class="k">]</span>
+</span><span class="line"><span class="nb">binary</span> scan <span class="nv">$plain</span> H<span class="o">*</span> plain
+</span><span class="line"><span class="nb">puts</span> plaintext<span class="err">=</span><span class="nv">$plain</span>
+</span><span class="line">
+</span><span class="line"><span class="c"># CFB 區塊</span>
+</span><span class="line"><span class="k">set</span> iv  <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">514746868</span>a71e577<span class="k">]</span> <span class="k">;</span> <span class="c"># IV 要換掉</span>
+</span><span class="line"><span class="k">set</span> keyset <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>keyset create <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> e6600fd8852ef5ab<span class="k">]]</span>
+</span><span class="line"><span class="c"># CFB 工作模式的特性,解密時後面亂填不影響真正要的部份,這邊補0x00</span>
+</span><span class="line"><span class="k">set</span> cipher <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> efac880000000000<span class="k">]</span>
+</span><span class="line"><span class="k">set</span> plain <span class="k">[</span><span class="nb">string</span> range <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>decrypt <span class="nv">$keyset</span> <span class="nv">$cipher</span> cfb iv<span class="k">]</span> <span class="mi">0</span> <span class="mi">2</span><span class="k">]</span>
+</span><span class="line"><span class="nb">binary</span> scan <span class="nv">$plain</span> H<span class="o">*</span> plain
+</span><span class="line"><span class="nb">puts</span> plaintext<span class="err">=</span><span class="nv">$plain</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>plaintext=000102030405060708090a0b0c0d0e91 <br />
+plaintext=d2d19f</p>
+
+<h2 id="cfb-only">CFB only</h2>
+<p>若要加密的內容小於 8 bytes，就使用 DES-CFB，key 和 IV 使用 key reply 取得的資訊，
+若輸入為</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>DA</td>
+      <td>01 02 03 04 05 06</td>
+    </tr>
+    <tr>
+      <td>SA</td>
+      <td>f1 f2 f3 f4 f5 f6</td>
+    </tr>
+    <tr>
+      <td>Type/Len</td>
+      <td>00 01</td>
+    </tr>
+    <tr>
+      <td>User Data</td>
+      <td>02</td>
+    </tr>
+    <tr>
+      <td>CRC</td>
+      <td>88 ee 59 7e</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><br />加密後會變成</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>DA</td>
+      <td>01 02 03 04 05 06</td>
+    </tr>
+    <tr>
+      <td>SA</td>
+      <td>f1 f2 f3 f4 f5 f6</td>
+    </tr>
+    <tr>
+      <td>Type/Len</td>
+      <td>17 86</td>
+    </tr>
+    <tr>
+      <td>User Data</td>
+      <td>a8</td>
+    </tr>
+    <tr>
+      <td>CRC</td>
+      <td>03 a0 85 75</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+</pre></td><td class="code"><pre><code class="tcl"><span class="line"><span class="nb">package</span> require tclDES
+</span><span class="line"><span class="k">set</span> iv  <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">810</span>e528e1c5fda1a<span class="k">]</span>
+</span><span class="line"><span class="k">set</span> keyset <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>keyset create <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> e6600fd8852ef5ab<span class="k">]]</span>
+</span><span class="line"><span class="c"># 資料只有 7 bytes, 補一個 00</span>
+</span><span class="line"><span class="k">set</span> cipher <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mi">1786</span>a803a0857500<span class="k">]</span>
+</span><span class="line"><span class="k">set</span> plain  <span class="k">[</span><span class="nb">string</span> range <span class="k">[</span><span class="o">::</span><span class="nv">des</span><span class="o">::</span>decrypt <span class="nv">$keyset</span> <span class="nv">$cipher</span> cfb iv<span class="k">]</span> <span class="mi">0</span> <span class="mi">6</span><span class="k">]</span>
+</span><span class="line"><span class="nb">binary</span> scan <span class="nv">$plain</span> H<span class="o">*</span> plain
+</span><span class="line"><span class="nb">puts</span> plaintext<span class="err">=</span><span class="nv">$plain</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>plaintext=00010288ee597e</p>
+
+<h2 id="crc">CRC</h2>
+<p>解密完後可以算一下 CRC 來驗證有沒有算錯，CRC 計算範圍是 Ethernet frame 扣除 CRC 4 bytes，以最後這個 CFB only 的範例來看</p>
+
+<p>inputt = 0x010203040506f1f2f3f4f5f6000102</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="tcl"><span class="line"><span class="nb">package</span> require crc32
+</span><span class="line"><span class="k">set</span> crc <span class="k">[</span><span class="nv">crc</span><span class="o">::</span>crc32 <span class="k">[</span><span class="nb">binary</span> format H<span class="o">*</span> <span class="mo">010203040506</span>f1f2f3f4f5f6000102<span class="k">]]</span>
+</span><span class="line"><span class="nb">binary</span> scan <span class="k">[</span><span class="nb">binary</span> format i <span class="nv">$crc</span><span class="k">]</span> H<span class="o">*</span> CRC
+</span><span class="line"><span class="nb">puts</span> CRC<span class="err">=</span><span class="nv">$CRC</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>CRC=88ee597e</p>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Jimmy Huang</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-03-20T19:56:38+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>20</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:56 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/docsis/'>docsis</a>, <a class='category' href='/blog/categories/security/'>security</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/03/19/docsis-bpi-decrypt-get-tek/" title="Previous Post: DOCSIS BPI 解密 - 取得 TEK">&laquo; DOCSIS BPI 解密 - 取得 TEK</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/03/20/docsis-bpi-decrypt-packet-pdu/">DOCSIS BPI 解密 - 解開 PDU</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/03/19/docsis-bpi-decrypt-get-tek/">DOCSIS BPI 解密 - 取得 TEK</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/03/eurodocsis-certificate/">EuroDOCSIS Certificate</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/03/docsis-certificate/">DOCSIS Certificate</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/generate-docsis-cvc/">Generate DOCSIS CVC</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+<section>
+<h1>分類</h1>
+<ul>
+  <li><a href='/blog/categories/docsis'>Docsis (4)</a></li>
+  <li><a href='/blog/categories/euro-docsis'>Euro-docsis (1)</a></li>
+  <li><a href='/blog/categories/security'>Security (5)</a></li>
+</ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - Jimmy Huang -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'jianiau';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://jianiau.github.io/blog/2016/03/20/docsis-bpi-decrypt-packet-pdu/';
+        var disqus_url = 'http://jianiau.github.io/blog/2016/03/20/docsis-bpi-decrypt-packet-pdu/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+</body>
+</html>
